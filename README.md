@@ -2,6 +2,8 @@
 
 Swift wrapper for [`libzsv`](https://github.com/liquidaty/zsv).
 
+[![CI](https://github.com/mihai8804858/swift-zsv/actions/workflows/ci.yml/badge.svg)](https://github.com/mihai8804858/swift-zsv/actions/workflows/ci.yml)
+
 ## Installation
 
 You can add `swift-zsv` to an Xcode project by adding it to your project as a package.
