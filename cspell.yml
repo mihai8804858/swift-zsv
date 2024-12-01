@@ -1,0 +1,9 @@
+files:
+  - Sources/**/*.swift
+  - Tests/**/*.swift
+  - Package.swift
+  - README.md
+ignoreWords:
+  - xcframework
+  - xcprivacy
+  - libzsv
