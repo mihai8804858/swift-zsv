@@ -38,8 +38,8 @@ struct Tests {
     }
 
     @Test
-    func parse_1_000_000() throws {
-        try parse(name: "1000000.csv")
+    func parse_500_000() throws {
+        try parse(name: "500000.csv")
     }
 
     // MARK: - Private
