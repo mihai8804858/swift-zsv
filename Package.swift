@@ -19,19 +19,31 @@ let package = Package(
             name: "CLibzsv",
             dependencies: [.target(name: "libzsv")],
             path: "Sources/C/CLibzsv",
-            cSettings: [.headerSearchPath("../../../Libraries/**")]
+            cSettings: [
+                .headerSearchPath("../../../Libraries/**"),
+                .define("ZSV_EXTRAS")
+            ]
         ),
         .target(
             name: "SwiftZSV",
             dependencies: [.target(name: "CLibzsv")],
             path: "Sources/Swift",
-            resources: [.copy("Resources/PrivacyInfo.xcprivacy")]
+            resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
+            cSettings: [.define("ZSV_EXTRAS")]
         ),
         .testTarget(
             name: "SwiftZSVTests",
             dependencies: [.target(name: "SwiftZSV")],
             path: "Tests",
-            resources: [.copy("Resources")]
+            resources: [
+                .copy("Resources/10.csv"),
+                .copy("Resources/100.csv"),
+                .copy("Resources/1000.csv"),
+                .copy("Resources/10000.csv"),
+                .copy("Resources/100000.csv"),
+                .copy("Resources/500000.csv")
+            ],
+            cSettings: [.define("ZSV_EXTRAS")]
         )
     ]
 )

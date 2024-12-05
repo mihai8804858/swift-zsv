@@ -2,62 +2,64 @@ import Testing
 import Foundation
 @testable import SwiftZSV
 
-private struct Context {
+private final class Context {
     let parser: zsv_parser
+
+    init(parser: zsv_parser) {
+        self.parser = parser
+    }
 }
 
 private struct Failure: Error {
     let message: String
 }
 
-@Suite
-struct Tests {
-    @Test
-    func parse_10() throws {
-        try parse(name: "10.csv")
+@Suite struct Tests {
+    @Test func parse_10() throws {
+        try parse(name: "10.csv", delimiter: 0x09)
     }
 
-    @Test
-    func parse_100() throws {
-        try parse(name: "100.csv")
+    @Test func parse_100() throws {
+        try parse(name: "100.csv", delimiter: 0x09)
     }
 
-    @Test
-    func parse_1_000() throws {
-        try parse(name: "1000.csv")
+    @Test func parse_1_000() throws {
+        try parse(name: "1000.csv", delimiter: 0x09)
     }
 
-    @Test
-    func parse_10_000() throws {
-        try parse(name: "10000.csv")
+    @Test func parse_10_000() throws {
+        try parse(name: "10000.csv", delimiter: 0x2C)
     }
 
-    @Test
-    func parse_100_000() throws {
-        try parse(name: "100000.csv")
+    @Test func parse_100_000() throws {
+        try parse(name: "100000.csv", delimiter: 0x2C)
     }
 
-    @Test
-    func parse_500_000() throws {
-        try parse(name: "500000.csv")
+    @Test func parse_500_000() throws {
+        try parse(name: "500000.csv", delimiter: 0x2C)
     }
 
     // MARK: - Private
 
-    private func parse(name: String) throws {
+    private func parse(name: String, delimiter: CChar) throws {
         let bufferSize = 4096
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
         defer { buffer.deallocate() }
-        let fileURL = try #require(Bundle.module.resourceURL?.appendingPathComponent("Resources/\(name)"))
+        let fileURL = try #require(Bundle.module.resourceURL?.appendingPathComponent(name))
         let fileStream = try #require(InputStream(fileAtPath: fileURL.path))
         fileStream.open()
         defer { fileStream.close() }
-        let parser = try #require(zsv_new(nil))
-        var context = Context(parser: parser)
-        zsv_set_context(parser, &context)
-        zsv_set_row_handler(parser) { ctx in
-            guard let ctx else { return }
-            let context = ctx.load(as: Context.self)
+        var options = zsv_opts()
+        options.delimiter = delimiter
+        options.overwrite = zsv_opt_overwrite(type: zsv_overwrite_type_none, ctx: nil, close_ctx: nil)
+        let parser = try #require(zsv_new(&options))
+        defer { zsv_delete(parser) }
+        let context = Context(parser: parser)
+        let contextRef = Unmanaged.passUnretained(context).toOpaque()
+        zsv_set_context(parser, contextRef)
+        zsv_set_row_handler(parser) { contextRef in
+            guard let contextRef else { return }
+            let context = Unmanaged<Context>.fromOpaque(contextRef).takeUnretainedValue()
             let cellCount = zsv_cell_count(context.parser)
             for cellIndex in 0..<cellCount {
                 let cell = zsv_get_cell(context.parser, cellIndex)
@@ -68,17 +70,18 @@ struct Tests {
         while fileStream.hasBytesAvailable {
             let read = fileStream.read(buffer, maxLength: bufferSize)
             if read < 0 {
+                zsv_abort(parser)
                 if let error = fileStream.streamError {
                     throw error
                 } else {
                     throw Failure(message: "File stream reading failed with \(read)")
                 }
             } else if read == 0 {
+                zsv_finish(parser)
                 break
+            } else {
+                zsv_parse_bytes(parser, buffer, read)
             }
-            zsv_parse_bytes(parser, buffer, read)
         }
-        zsv_finish(parser)
-        zsv_delete(parser)
     }
 }
