@@ -1,4 +1,4 @@
-import Testing
+import XCTest
 import Foundation
 @testable import SwiftZSV
 
@@ -14,28 +14,28 @@ private struct Failure: Error {
     let message: String
 }
 
-@Suite struct Tests {
-    @Test func parse_10() throws {
+final class ParseTests: XCTestCase {
+    func test_10() throws {
         try parse(name: "10.csv", delimiter: 0x09)
     }
 
-    @Test func parse_100() throws {
+    func test_100() throws {
         try parse(name: "100.csv", delimiter: 0x09)
     }
 
-    @Test func parse_1_000() throws {
+    func test_1_000() throws {
         try parse(name: "1000.csv", delimiter: 0x09)
     }
 
-    @Test func parse_10_000() throws {
+    func test_parse_10_000() throws {
         try parse(name: "10000.csv", delimiter: 0x2C)
     }
 
-    @Test func parse_100_000() throws {
+    func test_parse_100_000() throws {
         try parse(name: "100000.csv", delimiter: 0x2C)
     }
 
-    @Test func parse_500_000() throws {
+    func test_parse_500_000() throws {
         try parse(name: "500000.csv", delimiter: 0x2C)
     }
 
@@ -45,14 +45,14 @@ private struct Failure: Error {
         let bufferSize = 4096
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
         defer { buffer.deallocate() }
-        let fileURL = try #require(Bundle.module.resourceURL?.appendingPathComponent(name))
-        let fileStream = try #require(InputStream(fileAtPath: fileURL.path))
+        let fileURL = try XCTUnwrap(Bundle.module.resourceURL?.appendingPathComponent(name))
+        let fileStream = try XCTUnwrap(InputStream(fileAtPath: fileURL.path))
         fileStream.open()
         defer { fileStream.close() }
         var options = zsv_opts()
         options.delimiter = delimiter
         options.overwrite = zsv_opt_overwrite(type: zsv_overwrite_type_none, ctx: nil, close_ctx: nil)
-        let parser = try #require(zsv_new(&options))
+        let parser = try XCTUnwrap(zsv_new(&options))
         defer { zsv_delete(parser) }
         let context = Context(parser: parser)
         let contextRef = Unmanaged.passUnretained(context).toOpaque()
