@@ -51,7 +51,6 @@ final class ParseTests: XCTestCase {
         defer { fileStream.close() }
         var options = zsv_opts()
         options.delimiter = delimiter
-        options.overwrite = zsv_opt_overwrite(type: zsv_overwrite_type_none, ctx: nil, close_ctx: nil)
         let parser = try XCTUnwrap(zsv_new(&options))
         defer { zsv_delete(parser) }
         let context = Context(parser: parser)
