@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:5.10
 
 import PackageDescription
 
@@ -29,8 +29,7 @@ let package = Package(
             dependencies: [.target(name: "CLibzsv")],
             path: "Sources/Swift",
             resources: [.copy("Resources/PrivacyInfo.xcprivacy")],
-            cSettings: [.define("ZSV_EXTRAS")],
-            swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
+            cSettings: [.define("ZSV_EXTRAS")]
         ),
         .testTarget(
             name: "SwiftZSVTests",
@@ -47,5 +46,5 @@ let package = Package(
             cSettings: [.define("ZSV_EXTRAS")]
         )
     ],
-    swiftLanguageModes: [.v6]
+    swiftLanguageVersions: [.v5]
 )
